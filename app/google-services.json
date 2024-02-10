@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675962831413",
+    "project_id": "insurasec",
+    "storage_bucket": "insurasec.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675962831413:android:43259069fe932eac88e77c",
+        "android_client_info": {
+          "package_name": "com.example.insurasec"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBihfjVsHe5cwea-Oxt_BAEVH6RMms1PFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

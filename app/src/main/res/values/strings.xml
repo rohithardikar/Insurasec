@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">InsuraSec</string>
+    <string name="lets_get_started">Lets get started!</string>
+    <string name="signup">Signup</string>
+    <string name="login">Login</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="email">Email</string>
+    <string name="channel_name">demo_notification</string>
+    <string name="channel_description">demo_notification_description</string>
+    <string name="welcome">Welcome!</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="no_insurance_available">No Insurance Available</string>
+    <string name="enter_name">Enter name</string>
+    <string name="enter_phone_no">Enter Phone No.</string>
+    <string name="enter_link_of_medical_certificate">Enter Link of Medical Certificate</string>
+    <string name="submit">Submit</string>
+</resources>
