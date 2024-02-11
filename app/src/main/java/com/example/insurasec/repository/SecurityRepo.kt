@@ -13,9 +13,14 @@ class SecurityRepo(
 ) {
 
     fun encryptAndUpload(name: String, phone: String, medCerLink: String) {
-        uploadToFirebase(
-            encrypt(name, phone, medCerLink)
-        )
+        var dna: String
+        var randomMapList: String
+        encrypt(name, phone, medCerLink).let {
+            dna = it[0]
+            randomMapList = it[1]
+        }
+
+        uploadToFirebase(dna, randomMapList)
     }
 
     fun getDataFromFirebase() {
@@ -26,7 +31,10 @@ class SecurityRepo(
                 .document("insurance_data")
                 .get()
                 .addOnSuccessListener {
-                    val data = decrypt(it.get("name").toString())
+                    val data = decrypt(
+                        it.get("name").toString(),
+                        it.get("random_map_list").toString()
+                    )
                     Toast.makeText(context, "Data -> $data", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
@@ -35,9 +43,10 @@ class SecurityRepo(
         }
     }
 
-    private fun uploadToFirebase(data: String) {
+    private fun uploadToFirebase(data: String, randomMapList: String) {
         val cypherText = hashMapOf(
-            "name" to data
+            "name" to data,
+            "random_map_list" to randomMapList
         )
 
         auth.currentUser?.email?.let {
@@ -55,22 +64,30 @@ class SecurityRepo(
         }
     }
 
-    private fun decrypt(dna: String): String {
+    private fun decrypt(dna: String, randomMapList: String): String {
         Log.e("SecurityRepo", "Retrieved Data -> $dna")
 
         return binaryToString(
-            dnaToBinary(dna, 1)
+            dnaToBinary(dna, randomMapList)
         )
     }
 
-    private fun encrypt(name: String, phone: String, medCerLink: String): String {
+    private fun encrypt(name: String, phone: String, medCerLink: String): ArrayList<String> {
         Log.e("SecurityRepo", "Original Name -> $name")
         val binary = stringToBinary(name)
         Log.e("SecurityRepo", "Binary Name -> $binary")
-        val dna = binaryToDna(binary, 1)
+        var dna: String
+        var randomMapList: String
+        binaryToDna(binary).let {
+            dna = it[0]
+            randomMapList = it[1]
+        }
 
         Log.e("SecurityRepo", "DNA Name -> $dna")
-        return dna
+        return arrayListOf(
+            dna,
+            randomMapList
+        )
     }
 
     private fun stringToBinary(data: String): String {
@@ -84,32 +101,39 @@ class SecurityRepo(
         return binaryStringBuilder.toString()
     }
 
-    private fun binaryToDna(binary: String, encodeMapNumber: Int): String {
+    private fun binaryToDna(binary: String): ArrayList<String> {
         val chunks = binary.chunked(2)
         val resultStringBuilder = StringBuilder()
+        val randomMapListStringBuilder = StringBuilder()
 
         for (chunk in chunks) {
+            val randomMapNumber = randomMapNumber()
             Log.e("SecurityRepo", "Chunk -> $chunk")
-            val dnaValue = binaryToDnaMap(chunk, encodeMapNumber)
-            Log.e("SecurityRepo", "DNA Value -> $dnaValue , MapNumber -> $encodeMapNumber")
+            val dnaValue = binaryToDnaMap(chunk, randomMapNumber)
+            Log.e("SecurityRepo", "DNA Value -> $dnaValue , MapNumber -> $randomMapNumber")
             resultStringBuilder.append(dnaValue)
+            randomMapListStringBuilder.append(randomMapNumber)
         }
 
-        return resultStringBuilder.toString()
+        return arrayListOf(
+            resultStringBuilder.toString(),
+            randomMapListStringBuilder.toString()
+        )
     }
 
-    private fun dnaToBinary(cypherText: String, decodeMapNumber: Int): String {
+    private fun dnaToBinary(cypherText: String, randomMapList: String): String {
         val chunks = cypherText.chunked(1)
         val resultStringBuilder = StringBuilder()
 
-        for (chunk in chunks) {
+        for ((i, chunk) in chunks.withIndex()) {
+            val randomMap = randomMapList[i].digitToInt()
             Log.e("SecurityRepo", "Chunk -> $chunk")
-            val binaryValue = dnaToBinaryMap(chunk, decodeMapNumber)
-            Log.e("SecurityRepo", "BinaryValue -> $binaryValue , MapNumber -> $decodeMapNumber")
+            val binaryValue = dnaToBinaryMap(chunk, randomMap)
+            Log.e("SecurityRepo", "BinaryValue -> $binaryValue , MapNumber -> $randomMap")
             resultStringBuilder.append(binaryValue)
         }
 
-        Log.e("SecurityRepo", "BinaryName -> $resultStringBuilder , MapNumber -> $decodeMapNumber")
+        Log.e("SecurityRepo", "BinaryName -> $resultStringBuilder , MapNumber -> $randomMapList")
         return resultStringBuilder.toString()
     }
 
@@ -193,5 +217,9 @@ class SecurityRepo(
             }
             else -> return ""
         }
+    }
+
+    private fun randomMapNumber(): Int {
+        return (1..4).random()
     }
 }
