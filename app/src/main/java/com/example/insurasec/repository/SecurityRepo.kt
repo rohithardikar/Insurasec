@@ -22,12 +22,11 @@ class SecurityRepo(
         auth.currentUser?.email?.let { it ->
             db.collection("users")
                 .document(it)
+                .collection("insurance_info")
+                .document("insurance_data")
                 .get()
                 .addOnSuccessListener {
-                    Log.e("SecurityRepo", "Retrieved Data -> ${it.get("name")}")
-                    val data = binaryToString(
-                        dnaToBinary(it.get("name").toString(), 1)
-                    )
+                    val data = decrypt(it.get("name").toString())
                     Toast.makeText(context, "Data -> $data", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
@@ -44,6 +43,8 @@ class SecurityRepo(
         auth.currentUser?.email?.let {
             db.collection("users")
                 .document(it)
+                .collection("insurance_info")
+                .document("insurance_data")
                 .set(cypherText)
                 .addOnSuccessListener {
                     Toast.makeText(context, "Data Added Successfully!", Toast.LENGTH_SHORT).show()
@@ -52,6 +53,14 @@ class SecurityRepo(
                     Toast.makeText(context, "Something went wrong!", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+
+    private fun decrypt(dna: String): String {
+        Log.e("SecurityRepo", "Retrieved Data -> $dna")
+
+        return binaryToString(
+            dnaToBinary(dna, 1)
+        )
     }
 
     private fun encrypt(name: String, phone: String, medCerLink: String): String {

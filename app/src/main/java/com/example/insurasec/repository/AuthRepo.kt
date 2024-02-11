@@ -41,6 +41,8 @@ class AuthRepo(
 
                     db.collection("users")
                         .document(email)
+                        .collection("user_info")
+                        .document("signup_data")
                         .set(user)
                         .addOnSuccessListener {
                             val intent = Intent(context, Home::class.java)
