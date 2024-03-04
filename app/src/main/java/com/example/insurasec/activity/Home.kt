@@ -26,6 +26,11 @@ class Home : AppCompatActivity() {
             binding.tvWelcome.text = "Welcome, $username!"
         }
 
+        binding.tvViewHistory.setOnClickListener {
+            val intent = Intent(this, InsuranceHistory::class.java)
+            startActivity(intent)
+        }
+
         binding.tvSignout.setOnClickListener {
             homeViewModel.signout()
         }

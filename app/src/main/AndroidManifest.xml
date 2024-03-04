@@ -14,6 +14,9 @@
         android:theme="@style/Theme.InsuraSec"
         tools:targetApi="31">
         <activity
+            android:name=".activity.InsuranceHistory"
+            android:exported="false" />
+        <activity
             android:name=".activity.Insurance"
             android:exported="false" />
         <activity

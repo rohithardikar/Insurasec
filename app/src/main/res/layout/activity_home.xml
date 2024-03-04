@@ -52,6 +52,22 @@
             android:visibility="gone"/>
 
         <TextView
+            android:id="@+id/tv_view_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="50dp"
+            android:background="@color/black"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="@string/view_history"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rv_insuranceList" />
+
+        <TextView
             android:id="@+id/tv_signout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -65,7 +81,7 @@
             android:textSize="26sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_insuranceList" />
+            app:layout_constraintTop_toBottomOf="@id/tv_view_history" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
