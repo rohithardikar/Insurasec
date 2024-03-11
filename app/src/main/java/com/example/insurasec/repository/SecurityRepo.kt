@@ -1,10 +1,17 @@
 package com.example.insurasec.repository
 
 import android.content.Context
+import android.util.Base64
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 class SecurityRepo(
     private val context: Context,
@@ -15,7 +22,12 @@ class SecurityRepo(
     fun encryptAndUpload(name: String, phone: String, medCerLink: String) {
         var dna: String
         var randomMapList: String
-        encrypt(name, phone, medCerLink).let {
+
+        val compressedName = Base64.encodeToString(compressString(name), Base64.DEFAULT)
+        Log.e("SecRepo", "StringComName: $compressedName")
+//        val compressedPhone = compressString(phone).toString()
+//        val compressedMedCerLink = compressString(medCerLink).toString()
+        encrypt(compressedName, phone, medCerLink).let {
             dna = it[0]
             randomMapList = it[1]
         }
@@ -31,10 +43,13 @@ class SecurityRepo(
                 .document("insurance_data")
                 .get()
                 .addOnSuccessListener {
-                    val data = decrypt(
+                    val compressedData = decrypt(
                         it.get("name").toString(),
                         it.get("random_map_list").toString()
                     )
+
+                    val data = decompressString(Base64.decode(compressedData, Base64.DEFAULT))
+
                     Toast.makeText(context, "Data -> $data", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
@@ -221,5 +236,30 @@ class SecurityRepo(
 
     private fun randomMapNumber(): Int {
         return (1..4).random()
+    }
+
+    private fun compressString(input: String): ByteArray {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        try {
+            GZIPOutputStream(byteArrayOutputStream).bufferedWriter(StandardCharsets.UTF_8).use { it.write(input) }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return byteArrayOutputStream.toByteArray()
+    }
+
+    private fun decompressString(input: ByteArray): String {
+        val byteArrayInputStream = ByteArrayInputStream(input)
+        val stringBuilder = StringBuilder()
+
+        try {
+            GZIPInputStream(byteArrayInputStream).bufferedReader(StandardCharsets.UTF_8).useLines { lines ->
+                lines.forEach { stringBuilder.append(it) }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+
+        return stringBuilder.toString()
     }
 }

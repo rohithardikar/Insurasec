@@ -7,7 +7,7 @@ import com.example.insurasec.activity.Home
 import com.example.insurasec.activity.Welcome
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
+import java.security.MessageDigest
 
 class AuthRepo(
     private val context: Context,
@@ -17,6 +17,7 @@ class AuthRepo(
 
     fun login(email: String, password: String) {
         if (email.isNotBlank() && password.isNotBlank()) {
+
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     val intent = Intent(context, Home::class.java)
@@ -33,10 +34,11 @@ class AuthRepo(
         if (email.isNotBlank() && password.isNotBlank()) {
             auth.createUserWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
-
+                    
+                    val passwordHash = stringToHash(password)
                     val user = hashMapOf(
                         "email" to email,
-                        "password" to password
+                        "password" to passwordHash
                     )
 
                     db.collection("users")
@@ -75,5 +77,14 @@ class AuthRepo(
 
     fun getUsername(): String? {
         return auth.currentUser?.displayName
+    }
+
+    private fun stringToHash(input: String): String {
+        val bytes = input.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+
+        // Convert the byte array to a hexadecimal string
+        return digest.joinToString("") { "%02x".format(it) }
     }
 }
