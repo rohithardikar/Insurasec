@@ -19,20 +19,32 @@ class SecurityRepo(
     private val db: FirebaseFirestore
 ) {
 
-    fun encryptAndUpload(name: String, phone: String, medCerLink: String) {
-        var dna: String
-        var randomMapList: String
-
+    fun encryptAndUpload(
+        name: String,
+        phone: String,
+        ageProof: String,
+        addressProof: String,
+        identityProof: String,
+        medCerLink: String
+    ) {
         val compressedName = Base64.encodeToString(compressString(name), Base64.DEFAULT)
-        Log.e("SecRepo", "StringComName: $compressedName")
-//        val compressedPhone = compressString(phone).toString()
-//        val compressedMedCerLink = compressString(medCerLink).toString()
-        encrypt(compressedName, phone, medCerLink).let {
-            dna = it[0]
-            randomMapList = it[1]
-        }
+        val compressedPhone = Base64.encodeToString(compressString(phone), Base64.DEFAULT)
+        val compressedAgeProof = Base64.encodeToString(compressString(ageProof), Base64.DEFAULT)
+        val compressedAddressProof = Base64.encodeToString(compressString(addressProof), Base64.DEFAULT)
+        val compressedIdentityProof = Base64.encodeToString(compressString(identityProof), Base64.DEFAULT)
+        val compressedMedicalCertificate = Base64.encodeToString(compressString(medCerLink), Base64.DEFAULT)
+        Log.e("SecurityRepo", "Compressed Name: $compressedName\nCompressed Phone: $compressedPhone")
 
-        uploadToFirebase(dna, randomMapList)
+        encrypt(
+            compressedName,
+            compressedPhone,
+            compressedAgeProof,
+            compressedAddressProof,
+            compressedIdentityProof,
+            compressedMedicalCertificate
+        ).let {
+            uploadToFirebase(it[0], it[1])
+        }
     }
 
     fun getDataFromFirebase() {
@@ -43,14 +55,37 @@ class SecurityRepo(
                 .document("insurance_data")
                 .get()
                 .addOnSuccessListener {
-                    val compressedData = decrypt(
+                    val dna = arrayListOf(
                         it.get("name").toString(),
-                        it.get("random_map_list").toString()
+                        it.get("phone").toString(),
+                        it.get("age_proof").toString(),
+                        it.get("address_proof").toString(),
+                        it.get("identity_proof").toString(),
+                        it.get("medical_certificate").toString()
                     )
+                    val randomMapList = arrayListOf(
+                        it.get("name_random_map").toString(),
+                        it.get("phone_random_map").toString(),
+                        it.get("age_proof_random_map").toString(),
+                        it.get("address_proof_random_map").toString(),
+                        it.get("identity_proof_random_map").toString(),
+                        it.get("medical_certificate_random_map").toString()
+                    )
+                    Log.e("SecurityRepo", "DnaList: $dna\nRandomMapList: $randomMapList")
+                    val compressedData = decrypt(dna, randomMapList)
+                    val name = decompressString(Base64.decode(compressedData[0], Base64.DEFAULT))
+                    val phone = decompressString(Base64.decode(compressedData[1], Base64.DEFAULT))
+                    val ageProof = decompressString(Base64.decode(compressedData[2], Base64.DEFAULT))
+                    val addressProof = decompressString(Base64.decode(compressedData[3], Base64.DEFAULT))
+                    val identityProof = decompressString(Base64.decode(compressedData[4], Base64.DEFAULT))
+                    val medicalCertificate = decompressString(Base64.decode(compressedData[5], Base64.DEFAULT))
 
-                    val data = decompressString(Base64.decode(compressedData, Base64.DEFAULT))
-
-                    Toast.makeText(context, "Data -> $data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Name: $name", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Phone: $phone", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "AgeProof: $ageProof", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "AddressProof: $addressProof", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "IdentityProof: $identityProof", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "MedicalCertificate: $medicalCertificate", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener {
                     Toast.makeText(context, "Something went wrong!", Toast.LENGTH_SHORT).show()
@@ -58,10 +93,20 @@ class SecurityRepo(
         }
     }
 
-    private fun uploadToFirebase(data: String, randomMapList: String) {
+    private fun uploadToFirebase(dna: ArrayList<String>, randomMapList: ArrayList<String>) {
         val cypherText = hashMapOf(
-            "name" to data,
-            "random_map_list" to randomMapList
+            "name" to dna[0],
+            "name_random_map" to randomMapList[0],
+            "phone" to dna[1],
+            "phone_random_map" to randomMapList[1],
+            "age_proof" to dna[2],
+            "age_proof_random_map" to randomMapList[2],
+            "address_proof" to dna[3],
+            "address_proof_random_map" to randomMapList[3],
+            "identity_proof" to dna[4],
+            "identity_proof_random_map" to randomMapList[4],
+            "medical_certificate" to dna[5],
+            "medical_certificate_random_map" to randomMapList[5]
         )
 
         auth.currentUser?.email?.let {
@@ -79,26 +124,61 @@ class SecurityRepo(
         }
     }
 
-    private fun decrypt(dna: String, randomMapList: String): String {
-        Log.e("SecurityRepo", "Retrieved Data -> $dna")
-
-        return binaryToString(
-            dnaToBinary(dna, randomMapList)
+    private fun decrypt(dna: ArrayList<String>, randomMapList: ArrayList<String>): ArrayList<String> {
+        return arrayListOf(
+            binaryToString(dnaToBinary(dna[0], randomMapList[0])),
+            binaryToString(dnaToBinary(dna[1], randomMapList[1])),
+            binaryToString(dnaToBinary(dna[2], randomMapList[2])),
+            binaryToString(dnaToBinary(dna[3], randomMapList[3])),
+            binaryToString(dnaToBinary(dna[4], randomMapList[4])),
+            binaryToString(dnaToBinary(dna[5], randomMapList[5]))
         )
     }
 
-    private fun encrypt(name: String, phone: String, medCerLink: String): ArrayList<String> {
-        Log.e("SecurityRepo", "Original Name -> $name")
-        val binary = stringToBinary(name)
-        Log.e("SecurityRepo", "Binary Name -> $binary")
-        var dna: String
-        var randomMapList: String
-        binaryToDna(binary).let {
-            dna = it[0]
-            randomMapList = it[1]
+    private fun encrypt(
+        name: String,
+        phone: String,
+        ageProof: String,
+        addressProof: String,
+        identityProof: String,
+        medCerLink: String
+    ): ArrayList<ArrayList<String>> {
+        val binaryName = stringToBinary(name)
+        val binaryPhone = stringToBinary(phone)
+        val binaryAgeProof = stringToBinary(ageProof)
+        val binaryAddressProof = stringToBinary(addressProof)
+        val binaryIdentityProof = stringToBinary(identityProof)
+        val binaryMedicalCertificate = stringToBinary(medCerLink)
+        Log.e("SecurityRepo", "Binary Name: $binaryName\nBinary Phone: $binaryPhone")
+
+        val dna = arrayListOf<String>()
+        val randomMapList = arrayListOf<String>()
+        binaryToDna(binaryName).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
+        }
+        binaryToDna(binaryPhone).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
+        }
+        binaryToDna(binaryAgeProof).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
+        }
+        binaryToDna(binaryAddressProof).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
+        }
+        binaryToDna(binaryIdentityProof).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
+        }
+        binaryToDna(binaryMedicalCertificate).let {
+            dna.add(it[0])
+            randomMapList.add(it[1])
         }
 
-        Log.e("SecurityRepo", "DNA Name -> $dna")
+        Log.e("SecurityRepo", "DNA Name: ${dna[0]}, Random Map List: ${randomMapList[0]}")
         return arrayListOf(
             dna,
             randomMapList

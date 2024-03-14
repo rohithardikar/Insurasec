@@ -13,9 +13,12 @@
     <string name="welcome">Welcome!</string>
     <string name="sign_out">Sign Out</string>
     <string name="no_insurance_available">No Insurance Available</string>
-    <string name="enter_name">Enter name</string>
+    <string name="enter_name">Enter Name</string>
     <string name="enter_phone_no">Enter Phone No.</string>
     <string name="enter_link_of_medical_certificate">Enter Link of Medical Certificate</string>
     <string name="submit">Submit</string>
     <string name="view_history">View History</string>
+    <string name="identity_proof_hint">Identity Proof (Aadhaar Card/PAN Card)</string>
+    <string name="address_proof_hint">Address Proof (Electricity Bill/Voter ID)</string>
+    <string name="age_proof_hint">Age Proof (Birth Certificate/Driving License)</string>
 </resources>

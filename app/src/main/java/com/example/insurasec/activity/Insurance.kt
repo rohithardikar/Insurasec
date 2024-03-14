@@ -23,9 +23,12 @@ class Insurance : AppCompatActivity() {
         binding.btnSubmit.setOnClickListener {
             val name = binding.tietName.text.toString()
             val phone = binding.tietPhone.text.toString()
+            val ageProof = binding.tietAgeProof.text.toString()
+            val addressProof = binding.tietAddressProof.text.toString()
+            val identityProof = binding.tietIdentityProof.text.toString()
             val medCerLink = binding.tietMedicalCertificate.text.toString()
 
-            insuranceViewModel.encryptAndUpload(name, phone, medCerLink)
+            insuranceViewModel.encryptAndUpload(name, phone, ageProof, addressProof, identityProof, medCerLink)
         }
 
         binding.btnGetData.setOnClickListener {

@@ -14,9 +14,9 @@ class InsuranceViewModel @Inject constructor(
     private val securityRepo: SecurityRepo
 ): ViewModel() {
 
-    fun encryptAndUpload(name: String, phone: String, medCerLink: String) {
+    fun encryptAndUpload(name: String, phone: String, ageProof: String, addressProof: String, identityProof: String, medCerLink: String) {
         viewModelScope.launch {
-            securityRepo.encryptAndUpload(name, phone, medCerLink)
+            securityRepo.encryptAndUpload(name, phone, ageProof, addressProof, identityProof, medCerLink)
         }
     }
 
