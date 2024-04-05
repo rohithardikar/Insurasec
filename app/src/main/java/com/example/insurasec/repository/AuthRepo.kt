@@ -17,7 +17,6 @@ class AuthRepo(
 
     fun login(email: String, password: String) {
         if (email.isNotBlank() && password.isNotBlank()) {
-
             auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener {
                     val intent = Intent(context, Home::class.java)

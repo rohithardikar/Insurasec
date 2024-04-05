@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
+import androidx.core.text.isDigitsOnly
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayInputStream
@@ -34,6 +35,20 @@ class SecurityRepo(
         val compressedIdentityProof = Base64.encodeToString(compressString(identityProof), Base64.DEFAULT)
         val compressedMedicalCertificate = Base64.encodeToString(compressString(medCerLink), Base64.DEFAULT)
         Log.e("SecurityRepo", "Compressed Name: $compressedName\nCompressed Phone: $compressedPhone")
+
+        if (
+            name.isBlank() ||
+            phone.isBlank() ||
+            ageProof.isBlank() ||
+            addressProof.isBlank() ||
+            identityProof.isBlank() ||
+            medCerLink.isBlank() ||
+            !phone.isDigitsOnly() ||
+            phone.length != 10
+            ) {
+            Toast.makeText(context, "Invalid Input", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         encrypt(
             compressedName,
